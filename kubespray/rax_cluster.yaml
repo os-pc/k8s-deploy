@@ -1,0 +1,231 @@
+---
+- name: K8s cluser setup
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - community.general
+
+  tasks:
+      - community.general.terraform:
+          project_path: '../k8s-terraform/lon/'
+          state: '{{ state }}'
+          force_init: true
+#          backend_config_files:
+#            - '{{ backendfile }}'
+#          variables_files:
+#            - '{{ varsfile }}'
+        register: nodes
+
+      - name: add worker nodes to workers group
+        add_host:
+          hostname: '{{ item | replace(".", "-")}}-worker'
+          ansible_ssh_user: 'root'
+          ansible_host: '{{ item }}'
+          groups: kube-node
+        loop: "{{ nodes.outputs.worker_ips.value }}"
+
+      - name: add master nodes to master group
+        add_host:
+          hostname: '{{ item | replace(".", "-")}}-master'
+          ansible_host: '{{ item }}'
+          ansible_ssh_user: 'root'
+          groups: kube-master
+        loop: "{{ nodes.outputs.master_ips.value }}"
+
+      - name: add worker nodes to cluster group
+        add_host:
+          hostname: '{{ item | replace(".", "-")}}-worker'
+          ansible_host: '{{ item }}'
+          ansible_ssh_user: 'root'
+          groups: k8s-cluster
+        loop: "{{ nodes.outputs.worker_ips.value }}"
+
+      - name: add master nodes to cluster group
+        add_host:
+          hostname: '{{ item | replace(".", "-")}}-master'
+          ansible_host: '{{ item }}'
+          ansible_ssh_user: 'root'
+          groups: k8s-cluster
+        loop: "{{ nodes.outputs.master_ips.value }}"
+
+      - name: add etcd nodes to etcd group
+        add_host:
+          hostname: '{{ item | replace(".", "-")}}-master'
+          ansible_host: '{{ item }}'
+          ansible_ssh_user: 'root'
+          groups: etcd
+        loop: "{{ nodes.outputs.master_ips.value }}"
+
+- name: Setup master nodes
+  hosts: kube-master
+
+  tasks:
+      - name: run apt-get install python-netaddr
+        apt:
+          pkg:
+           - python
+           - python-netaddr
+          state: latest
+          update_cache: yes
+
+
+- name: Setup woerker nodes
+  hosts: kube-node
+
+  tasks:
+      - name: run apt-get install python-netaddr
+        apt:
+          pkg:
+           - python
+           - python-netaddr
+          state: latest
+          update_cache: yes
+
+#- name: Setup etcd nodes
+#  hosts: etcd
+#
+#  tasks:
+#      - name: run apt-get install python-netaddr
+#        apt:
+#          pkg:
+#           - python
+#           - python-netaddr
+#          state: latest
+#          update_cache: yes
+
+- name: Check ansible version
+  import_playbook: ansible_version.yml
+
+- hosts: all
+  gather_facts: false
+  tags: always
+  tasks:
+    - name: "Set up proxy environment"
+      set_fact:
+        proxy_env:
+          http_proxy: "{{ http_proxy | default ('') }}"
+          HTTP_PROXY: "{{ http_proxy | default ('') }}"
+          https_proxy: "{{ https_proxy | default ('') }}"
+          HTTPS_PROXY: "{{ https_proxy | default ('') }}"
+          no_proxy: "{{ no_proxy | default ('') }}"
+          NO_PROXY: "{{ no_proxy | default ('') }}"
+      no_log: true
+
+- hosts: bastion[0]
+  gather_facts: False
+  roles:
+    - { role: kubespray-defaults }
+    - { role: bastion-ssh-config, tags: ["localhost", "bastion"] }
+
+- hosts: k8s-cluster:etcd
+  strategy: linear
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  gather_facts: false
+  roles:
+    - { role: kubespray-defaults }
+    - { role: bootstrap-os, tags: bootstrap-os}
+
+- name: Gather facts
+  tags: always
+  import_playbook: facts.yml
+
+- hosts: k8s-cluster:etcd
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: kubernetes/preinstall, tags: preinstall }
+    - { role: "container-engine", tags: "container-engine", when: deploy_container_engine|default(true) }
+    - { role: download, tags: download, when: "not skip_downloads" }
+  environment: "{{ proxy_env }}"
+
+- hosts: etcd
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - role: etcd
+      tags: etcd
+      vars:
+        etcd_cluster_setup: true
+        etcd_events_cluster_setup: "{{ etcd_events_cluster_enabled }}"
+      when: not etcd_kubeadm_enabled| default(false)
+
+- hosts: k8s-cluster
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - role: etcd
+      tags: etcd
+      vars:
+        etcd_cluster_setup: false
+        etcd_events_cluster_setup: false
+      when: not etcd_kubeadm_enabled| default(false)
+
+- hosts: k8s-cluster
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: kubernetes/node, tags: node }
+  environment: "{{ proxy_env }}"
+
+- hosts: kube-master
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: kubernetes/master, tags: master }
+    - { role: kubernetes/client, tags: client }
+    - { role: kubernetes-apps/cluster_roles, tags: cluster-roles }
+
+- hosts: k8s-cluster
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: kubernetes/kubeadm, tags: kubeadm}
+    - { role: network_plugin, tags: network }
+    - { role: kubernetes/node-label, tags: node-label }
+
+- hosts: calico-rr
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: network_plugin/calico/rr, tags: ['network', 'calico_rr'] }
+
+- hosts: kube-master[0]
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: kubernetes-apps/rotate_tokens, tags: rotate_tokens, when: "secret_changed|default(false)" }
+    - { role: win_nodes/kubernetes_patch, tags: ["master", "win_nodes"] }
+
+- hosts: kube-master
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: kubernetes-apps/external_cloud_controller, tags: external-cloud-controller }
+    - { role: kubernetes-apps/network_plugin, tags: network }
+    - { role: kubernetes-apps/policy_controller, tags: policy-controller }
+    - { role: kubernetes-apps/ingress_controller, tags: ingress-controller }
+    - { role: kubernetes-apps/external_provisioner, tags: external-provisioner }
+
+- hosts: kube-master
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: kubernetes-apps, tags: apps }
+  environment: "{{ proxy_env }}"
+
+- hosts: k8s-cluster
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: kubernetes/preinstall, when: "dns_mode != 'none' and resolvconf_mode == 'host_resolvconf'", tags: resolvconf, dns_late: true }
