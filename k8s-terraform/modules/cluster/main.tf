@@ -7,7 +7,7 @@ terraform {
 }
 
 data "local_file" "ssh_key" {
-    filename = "/Users/sulochan.acharya/.ssh/id_rsa.pub"
+  filename = pathexpand(var.pub_key_file)
 }
 
 resource "openstack_compute_keypair_v2" "k8s_provision_key" {
