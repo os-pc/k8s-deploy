@@ -11,13 +11,15 @@ data "local_file" "ssh_key" {
 }
 
 resource "openstack_compute_keypair_v2" "k8s_provision_key" {
-  name       = format("k8s-provision-key-%s", var.region)
+  name       = "k8s-provision-key"
   public_key = data.local_file.ssh_key.content
+  region     = var.region
 }
 
 resource "openstack_compute_instance_v2" "k8s-master" {
   count     = var.master_count
   name      = format("k8s-master%02d", count.index + 1)
+  region    = var.region
   image_id  = var.image_id
   flavor_id = var.flavor_id
   key_pair  = openstack_compute_keypair_v2.k8s_provision_key.name

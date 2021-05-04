@@ -1,7 +1,7 @@
 terraform {
   backend "swift" {
     auth_url          = "https://identity.api.rackspacecloud.com/v2.0/"
-    region_name       = "LON"
+    region_name       = "IAD"
     container         = "k8stest"
     archive_container = "k8stest-archive"
   }
@@ -21,10 +21,10 @@ provider "openstack" {
   insecure    = true
 }
 
-module "k8s-lon" {
-  source = "../modules/cluster"
+module "k8s" {
+  source = "./modules/cluster"
 
-  region       = "lon"
+  region       = terraform.workspace
   master_count = 3
   worker_count = 2
   # Ubuntu 20.04 LTS
