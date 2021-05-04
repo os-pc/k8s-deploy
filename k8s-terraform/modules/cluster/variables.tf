@@ -25,14 +25,7 @@ variable "flavor_id" {
   default     = "performance1-2"
 }
 
-variable key_name {
-  description = "keypair name in the cloud"
-  type        = string
-  default     = "k3s_master"
-}
-
-variable pub_key_file {
+variable "pub_key_file" {
   description = "public key file for the keypair in the cloud"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
 }

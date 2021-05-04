@@ -27,6 +27,7 @@ module "k8s" {
   region       = terraform.workspace
   master_count = 3
   worker_count = 2
+  pub_key_file = var.pub_key_file
   # Ubuntu 20.04 LTS
   image_id = "72b4b2b7-a805-46f4-b1ff-f48092acc0bf"
   flavor_id = "performance1-2"
