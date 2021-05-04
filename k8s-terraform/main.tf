@@ -17,8 +17,8 @@ provider "openstack" {
   # password = "uses OS_PASSWORD env var"
   # tenantid = "OS_TENANT_ID"
   # token = "can use token but remember tokens expire OS_AUTH_TOKEN env var"
-  auth_url    = "https://identity.api.rackspacecloud.com/v2.0/"
-  insecure    = true
+  auth_url = "https://identity.api.rackspacecloud.com/v2.0/"
+  insecure = true
 }
 
 module "k8s" {
@@ -29,7 +29,7 @@ module "k8s" {
   worker_count = 2
   pub_key_file = var.pub_key_file
   # Ubuntu 20.04 LTS
-  image_id = "72b4b2b7-a805-46f4-b1ff-f48092acc0bf"
+  image_id  = "72b4b2b7-a805-46f4-b1ff-f48092acc0bf"
   flavor_id = "performance1-2"
 }
 
