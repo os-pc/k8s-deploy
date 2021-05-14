@@ -44,6 +44,7 @@ resource "openstack_compute_instance_v2" "k8s-master" {
 resource "openstack_compute_instance_v2" "k8s-node" {
   count     = var.worker_count
   name      = format("k8s-node%02d", count.index + 1)
+  region    = var.region
   image_id  = var.image_id
   flavor_id = var.flavor_id
   key_pair  = openstack_compute_keypair_v2.k8s_provision_key.name
