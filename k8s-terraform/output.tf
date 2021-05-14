@@ -1,7 +1,7 @@
-output "worker_ips" {
-  value = module.k8s.worker_ips
+output "master_networks" {
+  value = module.k8s.master_networks
 }
 
-output "master_ips" {
-  value = module.k8s.master_ips
+output "worker_networks" {
+  value = module.k8s.worker_networks
 }

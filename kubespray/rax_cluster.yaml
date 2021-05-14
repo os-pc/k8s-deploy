@@ -19,43 +19,48 @@
 
       - name: add worker nodes to workers group
         add_host:
-          hostname: '{{ item | replace(".", "-")}}-worker'
+          hostname: '{{ item.name }}'
           ansible_ssh_user: 'root'
-          ansible_host: '{{ item }}'
+          ansible_host: '{{ item.ips[0] }}'
+          ip: '{{ item.ips[1] }}'
           groups: kube-node
-        loop: "{{ nodes.outputs.worker_ips.value }}"
+        loop: "{{ nodes.outputs.worker_networks.value }}"
 
       - name: add master nodes to master group
         add_host:
-          hostname: '{{ item | replace(".", "-")}}-master'
-          ansible_host: '{{ item }}'
+          hostname: '{{ item.name }}'
+          ansible_host: '{{ item.ips[0] }}'
           ansible_ssh_user: 'root'
+          ip: '{{ item.ips[1] }}'
           groups: kube-master
-        loop: "{{ nodes.outputs.master_ips.value }}"
+        loop: "{{ nodes.outputs.master_networks.value }}"
 
       - name: add worker nodes to cluster group
         add_host:
-          hostname: '{{ item | replace(".", "-")}}-worker'
-          ansible_host: '{{ item }}'
+          hostname: '{{ item.name }}'
+          ansible_host: '{{ item.ips[0] }}'
+          ip: '{{ item.ips[1] }}'
           ansible_ssh_user: 'root'
           groups: k8s-cluster
-        loop: "{{ nodes.outputs.worker_ips.value }}"
+        loop: "{{ nodes.outputs.worker_networks.value }}"
 
       - name: add master nodes to cluster group
         add_host:
-          hostname: '{{ item | replace(".", "-")}}-master'
-          ansible_host: '{{ item }}'
+          hostname: '{{ item.name }}'
+          ansible_host: '{{ item.ips[0] }}'
+          ip: '{{ item.ips[1] }}'
           ansible_ssh_user: 'root'
           groups: k8s-cluster
-        loop: "{{ nodes.outputs.master_ips.value }}"
+        loop: "{{ nodes.outputs.master_networks.value }}"
 
       - name: add etcd nodes to etcd group
         add_host:
-          hostname: '{{ item | replace(".", "-")}}-master'
-          ansible_host: '{{ item }}'
+          hostname: '{{ item.name }}'
+          ansible_host: '{{ item.ips[0] }}'
+          ip: '{{ item.ips[1] }}'
           ansible_ssh_user: 'root'
           groups: etcd
-        loop: "{{ nodes.outputs.master_ips.value }}"
+        loop: "{{ nodes.outputs.master_networks.value }}"
 
 - name: Setup master nodes
   hosts: kube-master
