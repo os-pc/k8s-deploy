@@ -23,6 +23,7 @@ resource "openstack_compute_instance_v2" "k8s-master" {
   image_id  = var.image_id
   flavor_id = var.flavor_id
   key_pair  = openstack_compute_keypair_v2.k8s_provision_key.name
+  user_data = "#cloud-config\npackages:\n - python\n - python-netaddr"
 
   network {
     uuid = "00000000-0000-0000-0000-000000000000"
@@ -48,6 +49,7 @@ resource "openstack_compute_instance_v2" "k8s-node" {
   image_id  = var.image_id
   flavor_id = var.flavor_id
   key_pair  = openstack_compute_keypair_v2.k8s_provision_key.name
+  user_data = "#cloud-config\npackages:\n - python\n - python-netaddr"
 
   network {
     uuid = "00000000-0000-0000-0000-000000000000"

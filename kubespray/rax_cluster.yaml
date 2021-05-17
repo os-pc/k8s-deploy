@@ -64,30 +64,17 @@
           groups: etcd
         loop: "{{ nodes.outputs.master_networks.value }}"
 
-- name: Setup master nodes
-  hosts: kube-master
+- name: Wait for hosts to boot
+  hosts: all
 
   tasks:
-      - name: run apt-get install python-netaddr
-        apt:
-          pkg:
-           - python
-           - python-netaddr
-          state: latest
-          update_cache: yes
-
-
-- name: Setup woerker nodes
-  hosts: kube-node
-
-  tasks:
-      - name: run apt-get install python-netaddr
-        apt:
-          pkg:
-           - python
-           - python-netaddr
-          state: latest
-          update_cache: yes
+      - name: wait for unattended upgrades
+        command: lsof /var/lib/dpkg/lock-frontend
+        retries: 300
+        delay: 2
+        register: waiting
+        failed_when: waiting.rc >= 2
+        until: waiting.rc == 1
 
 #- name: Setup etcd nodes
 #  hosts: etcd
