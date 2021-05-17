@@ -32,3 +32,8 @@ finally,
 $ ansible-playbook rax_cluster.yaml -e region=IAD -vv
 
 ```
+
+Optional flags to the `rax_cluster.yaml` playbook:
+- `-e pub_key_file=/path/to/ssh/public/key` allows you to set a different SSH key than `$HOME/.ssh/id_rsa.pub`
+
+
