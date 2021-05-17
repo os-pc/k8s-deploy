@@ -8,7 +8,7 @@
   tasks:
       - community.general.terraform:
           project_path: '../k8s-terraform/'
-          state: '{{ state }}'
+          state: '{{ state|default("present") }}'
           force_init: true
           workspace: '{{ region|default("LON") }}'
 #          backend_config_files:

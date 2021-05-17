@@ -29,6 +29,6 @@ $ export OS_USERNAME='nova username'
 $ export OS_AUTH_TOKEN='token part of nova credentials'
 
 finally,
-$ ansible-playbook rax_cluster.yaml -e state=present -e region=IAD -vv
+$ ansible-playbook rax_cluster.yaml -e region=IAD -vv
 
 ```
