@@ -1,7 +1,6 @@
 terraform {
   backend "swift" {
     auth_url          = "https://identity.api.rackspacecloud.com/v2.0/"
-    region_name       = "IAD"
     container         = "k8stest"
     archive_container = "k8stest-archive"
   }

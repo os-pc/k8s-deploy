@@ -15,6 +15,8 @@
 #            - '{{ backendfile }}'
 #          variables_files:
 #            - '{{ varsfile }}'
+          backend_config:
+            region_name: '{{ region|default("LON") }}'
         register: nodes
 
       - name: add worker nodes to workers group
