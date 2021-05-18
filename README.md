@@ -32,9 +32,11 @@ $ OS_CLOUD=<mycloud> openstack token issue
 
 
 ### Setup the environment to run
+```
 $ export OS_TENANT_ID='nova tenant id / openstack project_id'
 $ export OS_USERNAME='nova username'
 $ export OS_AUTH_TOKEN='token id'
+```
 
 ### Building the cluster
 
