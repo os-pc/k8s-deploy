@@ -16,8 +16,6 @@
 #            - '{{ backendfile }}'
 #          variables_files:
 #            - '{{ varsfile }}'
-          backend_config:
-            region_name: '{{ region|default("LON") }}'
           variables:
             pub_key_file: '{{ pub_key_file|default("~/.ssh/id_rsa.pub") }}'
         register: nodes
