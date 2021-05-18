@@ -1,12 +1,13 @@
 ---
-- name: K8s cluser setup
+- name: k8s cluster setup
   hosts: localhost
   gather_facts: false
   collections:
     - community.general
 
   tasks:
-      - community.general.terraform:
+      - name: build master and worker nodes
+        community.general.terraform:
           project_path: '../k8s-terraform/'
           state: '{{ state|default("present") }}'
           force_init: true
