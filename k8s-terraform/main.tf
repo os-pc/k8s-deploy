@@ -28,7 +28,7 @@ module "k8s" {
   worker_count = 2
   pub_key_file = var.pub_key_file
   # Ubuntu 20.04 LTS
-  image_id  = "72b4b2b7-a805-46f4-b1ff-f48092acc0bf"
+  image  = "Ubuntu 20.04 LTS (Focal Fossa) (Cloud)"
   flavor_id = "performance1-2"
 }
 
