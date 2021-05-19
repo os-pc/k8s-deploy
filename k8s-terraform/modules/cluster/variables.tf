@@ -13,10 +13,10 @@ variable "worker_count" {
   type        = number
 }
 
-variable "image_id" {
-  description = "image to boot"
+variable "image" {
+  description = "name of the VM image to boot"
   type        = string
-  default     = "72b4b2b7-a805-46f4-b1ff-f48092acc0bf"
+  default     = "Ubuntu 20.04 LTS (Focal Fossa) (Cloud)"
 }
 
 variable "flavor_id" {
