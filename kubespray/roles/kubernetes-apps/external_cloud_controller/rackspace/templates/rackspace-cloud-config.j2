@@ -1,0 +1,16 @@
+[Global]
+auth-url="https://identity.api.rackspacecloud.com/v2.0/"
+username="{{ rackspace_username }}"
+password="{{ rackspace_password }}"
+region="{{ rackspace_region }}"
+tenant-id="{{ rackspace_tenant_id }}"
+
+[LoadBalancer]
+
+[Networking]
+ipv6-support-disabled={{ rackspace_network_ipv6_disabled | string | lower }}
+internal-network-name="private"
+public-network-name="public"
+
+[Metadata]
+search-order="configDrive,metadataService"

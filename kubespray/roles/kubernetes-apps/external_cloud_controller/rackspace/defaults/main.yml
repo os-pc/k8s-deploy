@@ -1,0 +1,12 @@
+---
+# The external cloud controller will need credentials to access
+# openstack apis. Per default these values will be
+# read from the environment.
+rackspace_username: "{{ lookup('env','OS_USERNAME')  }}"
+rackspace_password: "{{ lookup('env','OS_PASSWORD')  }}"
+rackspace_region: "{{ lookup('env','OS_REGION_NAME')  }}"
+rackspace_tenant_id: "{{ lookup('env','OS_TENANT_ID')| default(lookup('env','OS_PROJECT_ID'),true) }}"
+
+rackspace_cloud_controller_image_tag: "0.0.0"
+
+rackspace_network_ipv6_disabled: false
