@@ -1,0 +1,10 @@
+# Cloud Load Balancer Configs
+# rackspace_clb_method: "ROUND_ROBIN"
+# rackspace_clb_create_monitor: "yes"
+# rackspace_clb_monitor_delay: "1m"
+# rackspace_clb_monitor_timeout: "30s"
+# rackspace_clb_monitor_max_retries: "3"
+# rackspace_network_ipv6_disable: false
+
+## The tag of the external Rackspace Cloud Controller image
+# rackspace_cloud_controller_image_tag: "latest"

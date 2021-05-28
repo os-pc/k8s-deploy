@@ -1,0 +1,46 @@
+---
+- include_tasks: rackspace-credential-check.yml
+  tags: rackspace
+
+- name: Rackspace Cloud Controller | Write Rackspace cloud-config
+  template:
+    src: "rackspace-cloud-config.j2"
+    dest: "{{ kube_config_dir }}/rackspace_cloud_config"
+    group: "{{ kube_cert_group }}"
+    mode: 0640
+  when: inventory_hostname == groups['kube-master'][0]
+  tags: rackspace
+
+- name: Rackspace Cloud Controller | Get base64 cloud-config
+  slurp:
+    src: "{{ kube_config_dir }}/rackspace_cloud_config"
+  register: rackspace_cloud_config_secret
+  when: inventory_hostname == groups['kube-master'][0]
+  tags: rackspace
+
+- name: Rackspace Cloud Controller | Generate Manifests
+  template:
+    src: "{{ item.file }}.j2"
+    dest: "{{ kube_config_dir }}/{{ item.file }}"
+  with_items:
+    - {name: rackspace-cloud-config-secret, file: rackspace-cloud-config-secret.yml}
+    - {name: rackspace-cloud-controller-manager-roles, file: rackspace-cloud-controller-manager-roles.yml}
+    - {name: rackspace-cloud-controller-manager-role-bindings, file: rackspace-cloud-controller-manager-role-bindings.yml}
+    - {name: rackspace-cloud-controller-manager-ds, file: rackspace-cloud-controller-manager-ds.yml}
+  register: rackspace_manifests
+  when: inventory_hostname == groups['kube-master'][0]
+  tags: rackspace
+
+- name: Rackspace Cloud Controller | Apply Manifests
+  kube:
+    kubectl: "{{ bin_dir }}/kubectl"
+    filename: "{{ kube_config_dir }}/{{ item.item.file }}"
+    state: "latest"
+  with_items:
+    - "{{ rackspace_manifests.results }}"
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+    - not item is skipped
+  loop_control:
+    label: "{{ item.item.file }}"
+  tags: rackspace

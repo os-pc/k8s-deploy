@@ -379,6 +379,10 @@ external_openstack_network_internal_networks:
 external_openstack_network_public_networks:
 - ""
 
+## Enable Rackspace Cloud Controller by default
+cloud_provider: external
+external_cloud_provider: rackspace
+
 ## List of authorization modes that must be configured for
 ## the k8s cluster. Only 'AlwaysAllow', 'AlwaysDeny', 'Node' and
 ## 'RBAC' modes are tested. Order is important.
