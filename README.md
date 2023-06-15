@@ -36,17 +36,15 @@ $ OS_CLOUD=<mycloud> openstack token issue
 $ export OS_TENANT_ID='nova tenant id / openstack project_id'
 $ export OS_USERNAME='nova username'
 $ export OS_AUTH_TOKEN='token id'
+$ export OS_REGION_NAME='YOURPICK'  # DFW, IAD, ORD, LON, SYD, HKG
 ```
 
 ### Building the cluster
 
 ```
-$ ansible-playbook rax_cluster.yaml -e region=IAD -vv
+$ ansible-playbook rax_cluster.yaml -vv
 
 ```
-
-Available regions to build:
-- IAD, DFW, ORD, LON, HKG, SYD
 
 Optional flags to the `rax_cluster.yaml` playbook:
 - `-e pub_key_file=/path/to/ssh/public/key` allows you to set a different SSH key than `$HOME/.ssh/id_rsa.pub`

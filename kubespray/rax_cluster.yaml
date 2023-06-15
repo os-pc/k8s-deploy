@@ -5,13 +5,21 @@
   collections:
     - community.general
 
+  vars:
+    - rackspace_region: "{{ lookup('env', 'OS_REGION_NAME') }}"
   tasks:
+      - name: Rackspace Auth | check OS_REGION_NAME
+        fail:
+          msg: "OS_REGION_NAME is unset"
+        when:
+          - rackspace_region is not defined or rackspace_region == ""
+
       - name: build master and worker nodes
         community.general.terraform:
           project_path: '../k8s-terraform/'
           state: '{{ state|default("present") }}'
           force_init: true
-          workspace: '{{ region|default("LON") }}'
+          workspace: '{{ rackspace_region }}'
 #          backend_config_files:
 #            - '{{ backendfile }}'
 #          variables_files:
